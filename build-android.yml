@@ -1,0 +1,38 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:   # start manually from the GitHub app or website
+
+jobs:
+  build:
+    name: Build for Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      # Cache the Unity Library folder between runs to speed up later builds
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Android-2022.3.35f1
+          restore-keys: Library-Android-
+
+      - name: Build Android APK
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          unityVersion: 2022.3.35f1
+          targetPlatform: Android
+          buildMethod: CiBuild.BuildAndroid
+          androidExportType: androidApk
+          versioning: None
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: RealityFusion-APK
+          path: build/Android/*.apk
